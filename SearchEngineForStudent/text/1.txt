@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 aaa aaa bbb ccc ddd eee
+=======
+aaa aaa bbb ccc ddd eee
+>>>>>>> fafba1c8af9e12584babd1de25cbd52e207922b6
 fff aaa bbb ccc ddd eee
