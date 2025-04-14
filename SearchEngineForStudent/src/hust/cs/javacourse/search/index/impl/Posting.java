@@ -2,6 +2,7 @@ package hust.cs.javacourse.search.index.impl;
 
 import hust.cs.javacourse.search.index.AbstractPosting;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Comparator;
@@ -75,16 +76,24 @@ public class Posting extends AbstractPosting {
 
     @Override
     public void readObject(ObjectInputStream in) {
-        docId = (int) in.readObject();
-        freq = (int) in.readObject();
-        positions = (List<Integer>) in.readObject();
+        try{
+            docId = (int) in.readObject();
+            freq = (int) in.readObject();
+            positions = (List<Integer>) in.readObject();
+        } catch (IOException e1){
+
+        } catch (ClassNotFoundException e2){
+
+        }
     }
+
 
     @Override
     public void writeObject(ObjectOutputStream out) {
-        out.writeInt(docId);
-        out.writeInt(freq);
-        out.writeObject(positions);
+        try{out.writeInt(docId);
+            out.writeInt(freq);
+            out.writeObject(positions);} catch(IOException e1) {}
+
     }
 
 

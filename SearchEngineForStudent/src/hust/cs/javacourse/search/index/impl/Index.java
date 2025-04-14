@@ -45,7 +45,7 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void load(File file) {
-        1
+
     }
 
     /**
@@ -56,7 +56,7 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void save(File file) {
-        1
+
     }
 
     /**
@@ -93,7 +93,7 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void optimize() {
-        1
+
     }
 
     /**
@@ -113,9 +113,13 @@ public class Index extends AbstractIndex {
      * @param out :输出流对象
      */
     @Override
-    public void writeObject(ObjectOutputStream out)  {
-        out.writeObject(docIdToDocPathMapping);
-        out.writeObject(termToPostingListMapping);
+    public void writeObject (ObjectOutputStream out) {
+        try {
+            out.writeObject(docIdToDocPathMapping);
+            out.writeObject(termToPostingListMapping);
+        } catch(IOException e1){
+
+        }
     }
 
     /**
@@ -125,7 +129,10 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void readObject(ObjectInputStream in) {
-        this.docIdToDocPathMapping = (Map<Integer, String>)in.readObject();
-        this.termToPostingListMapping = (Map<AbstractTerm, AbstractPostingList>) in.readObject();
+        try {
+            this.docIdToDocPathMapping = (Map<Integer, String>) in.readObject();
+            this.termToPostingListMapping = (Map<AbstractTerm, AbstractPostingList>) in.readObject();
+        } catch (IOException e1){System.out.println("IOEException");}
+        catch (ClassNotFoundException e2){System.out.println("ClassNotFoundException");}
     }
 }
