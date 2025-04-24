@@ -5,38 +5,49 @@ import hust.cs.javacourse.search.index.AbstractPosting;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
+//主要用于存储某一个Term在每个文档中的信息，主要的数据成员有三个：文档编号docId，这个Term在文档中出现的次数freq，每次出现的位置positions。
+//sort方法：用于将positions进行排序。
+
 public class Posting extends AbstractPosting {
-    public Posting(){}
-    public Posting(int docId, int freq, List<Integer> positions)
-    {
-        this.docId = docId;
-        this.freq = freq;
-        this.positions = positions;
+
+    /**
+     * 缺省构造函数
+     */
+    public Posting() {
     }
 
-    @Override
-    public int compareTo(AbstractPosting o) {
-        if(o == null) return docId;
-        return this.docId - o.getDocId();
+    /**
+     * 构造函数
+     *
+     * @param docId     ：包含单词的文档id
+     * @param freq      ：单词在文档里出现的次数
+     * @param positions ：单词在文档里出现的位置
+     */
+    public Posting(int docId, int freq, List<Integer> positions) {
+        super(docId, freq, positions);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == this) return true;
-        if(obj == null || getClass()!=obj.getClass()) return false;
-
-        Posting posting = (Posting) obj;
-        return this.docId == posting.docId &&
-                this.freq == posting.freq &&
-                this.positions == posting.positions;
+        if(obj == this)
+            return true;
+        else if(obj instanceof Posting){
+            Posting posting = (Posting)obj;
+            if(((Posting) obj).positions != null && this.positions != null)
+                return this.positions.size() == posting.positions.size() && this.positions.containsAll(((Posting) obj).positions)
+                        && this.docId == posting.docId && this.freq == posting.freq;
+            else if(posting.positions == null && this.positions == null)
+                return this.freq == posting.freq && this.docId == posting.docId;
+        }
+        return false;
     }
 
     @Override
     public String toString() {
-        return " docId: " + docId + " freq: " + freq + " positions:" + positions;
+        return "docId:" + this.docId + ", freq:" + this.freq + ", positions:" + this.positions +"";
     }
 
     @Override
@@ -70,31 +81,35 @@ public class Posting extends AbstractPosting {
     }
 
     @Override
-    public void sort() {
-        positions.sort(Comparator.naturalOrder());
+    public int compareTo(AbstractPosting o) {
+        return this.docId - o.getDocId();
     }
 
     @Override
-    public void readObject(ObjectInputStream in) {
-        try{
-            docId = (int) in.readObject();
-            freq = (int) in.readObject();
-            positions = (List<Integer>) in.readObject();
-        } catch (IOException e1){
-
-        } catch (ClassNotFoundException e2){
-
-        }
+    public void sort() {
+        Collections.sort(this.positions);
     }
-
 
     @Override
     public void writeObject(ObjectOutputStream out) {
-        try{out.writeInt(docId);
-            out.writeInt(freq);
-            out.writeObject(positions);} catch(IOException e1) {}
-
+        try{
+            out.writeInt(this.docId);
+            out.writeInt(this.freq);
+            out.writeObject(this.positions);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-
+    @Override
+    @SuppressWarnings("unchecked")
+    public void readObject(ObjectInputStream in) {
+        try{
+            this.docId = in.readInt();
+            this.freq = in.readInt();
+            this.positions = (List<Integer>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }

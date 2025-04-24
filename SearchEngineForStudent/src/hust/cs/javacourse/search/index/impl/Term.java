@@ -6,25 +6,34 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+//本质上是对String类型的简单包装
 public class Term extends AbstractTerm {
-    public Term(){}
-    public Term(String content){this.content = content;}
 
-    //Compareable接口实现
-    @Override
-    public int compareTo(AbstractTerm o) {
-        if(o == null) return 1;
 
-        return content.compareTo(o.getContent());
+    public Term() {
+    }
+
+
+    public Term(String content) {
+        super(content);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == this) return true;
-        if(obj == null || getClass()!=obj.getClass()) return false;
+        if(obj == this)
+            return true;
+        else if(obj instanceof Term){
+            Term term = (Term)obj;
+            if(term.content != null && this.content != null)
+                return term.content.equals(this.content);
+            else return term.content == null && this.content == null;
+        }
+        return false;
+    }
 
-        Term term = (Term) obj;
-        return content == term.content;
+    @Override
+    public String toString() {
+        return this.content;
     }
 
     @Override
@@ -38,23 +47,29 @@ public class Term extends AbstractTerm {
     }
 
     @Override
-    public String toString() {//还要返回其他信息？
-        return this.content;
+    public int compareTo(AbstractTerm o) {
+        return content.compareTo(o.getContent());
     }
+    //对Term类型的对象,转化为用String类的compareTo比较
 
+    //从接口继承的方法 hust.cs.javacourse.search.index.FileSerializable
     @Override
     public void writeObject(ObjectOutputStream out) {
         try{
-            out.writeObject(content);
-        } catch (IOException e1){}
+            //将对象写入输出流
+            out.writeObject(this.content);
+        } catch (IOException e) {
+            // 捕获异常并打印异常堆栈信息
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void readObject(ObjectInputStream in) {
         try{
-            content = (String) in.readObject();
-        } catch (IOException e1) {
-        } catch (ClassNotFoundException e2){}
+            this.content = (String)in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
-
+    }
 }

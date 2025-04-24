@@ -27,7 +27,7 @@ public abstract class AbstractTermTuple {
     public int curPos ;
 
     /**
-     * 判断二个三元组内容是否相同
+     * 判断两个三元组内容是否相同
      * @param obj ：要比较的另外一个三元组
      * @return 如果内容相等（三个属性内容都相等）返回true，否则返回false
      */

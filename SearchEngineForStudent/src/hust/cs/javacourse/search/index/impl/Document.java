@@ -5,17 +5,20 @@ import hust.cs.javacourse.search.index.AbstractTermTuple;
 
 import java.util.List;
 
+//保存每一个文档的基本信息，包括文档所在路径docPath，文档唯一编号docId，同时还有组成整个文档的所有单词所构成的TermTuple的List。
+//addTuples方法：将传入的Tuple添加到三元组中，contains方法判断三元组中是否存在传入的Tuple。
+//getTuple方法：根据传入的下标获取Tuple。
 public class Document extends AbstractDocument {
-    public Document(){}
-    public Document(int docId,String docPath){
-        this.docId = docId;
-        this.docPath = docPath;
+
+    public Document() {
     }
-    public Document(int docId, String docPath, List<AbstractTermTuple>  tuples)
-    {
-        this.docId = docId;
-        this.docPath = docPath;
-        this.tuples = tuples;
+
+    public Document(int docId, String docPath) {
+        super(docId, docPath);
+    }
+
+    public Document(int docId, String docPath, List<AbstractTermTuple> tuples) {
+        super(docId, docPath, tuples);
     }
 
     @Override
@@ -45,30 +48,30 @@ public class Document extends AbstractDocument {
 
     @Override
     public void addTuple(AbstractTermTuple tuple) {
-        if(!tuples.contains(tuple)){
-            tuples.add(tuple);
-        }
+        if(!this.tuples.contains(tuple))
+            this.tuples.add(tuple);
     }
 
+    //document contains tuple using tuples contains tuple to solve
     @Override
     public boolean contains(AbstractTermTuple tuple) {
-        return tuples.contains(tuple);
+        return this.tuples.contains(tuple);
     }
 
-
-
+    //获取索引为index的tuple
     @Override
     public AbstractTermTuple getTuple(int index) {
-        return tuples.get(index);
+        return this.tuples.get(index);
     }
 
     @Override
     public int getTupleSize() {
-        return tuples.size();
+        return this.tuples.size();
     }
 
     @Override
     public String toString() {
-        return " docId: " + docId + ", docPath: " + docPath + ", turples: " + tuples;
+        return "docId: " + this.docId + ", " + "docPath: " + this.docPath + "tuples: " + this.tuples;
     }
+
 }

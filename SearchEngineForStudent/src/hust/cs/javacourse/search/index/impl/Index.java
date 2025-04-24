@@ -1,22 +1,21 @@
 package hust.cs.javacourse.search.index.impl;
 
-import hust.cs.javacourse.search.index.AbstractDocument;
-import hust.cs.javacourse.search.index.AbstractIndex;
-import hust.cs.javacourse.search.index.AbstractPostingList;
-import hust.cs.javacourse.search.index.AbstractTerm;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Map;
-import java.util.Set;
+import hust.cs.javacourse.search.index.*;
 
+import java.io.*;
+import java.util.*;
+
+//实现索引，最主要的两个个数据成员：以map实现文档索引的docIdToDocPathMapping和实现关键词索引的termToPostingListMapping。
+//实现了addDocument方法：对传入的Document，将docId和docPath加入docIdToDocPathMapping索引，同时遍历该文档的所有三元组，更新termToPostingListMapping成员。
+//load和save方法：实际山就是将File类型的参数转化为Object的流类型，从而调用自身的writeObject/readObject方法。
+//search方法：传入Term返回对应的postingList（如果不存在返回null）。
+//optimize方法：对索引进行优化，即将每一个单词的PostingList按照docId进行排序，同时对每一个Posting里面的position排序。
+//getDocName方法：根据传入的docId获取完全路径名。
+//writeObject和readObject方法：对所建立的索引进行序列化和反序列化操作。
 /**
  * AbstractIndex的具体实现类
  */
 public class Index extends AbstractIndex {
-
-    public Index(){}
     /**
      * 返回索引的字符串表示
      *
@@ -24,7 +23,10 @@ public class Index extends AbstractIndex {
      */
     @Override
     public String toString() {
-        return null;
+        if(docIdToDocPathMapping.size() == 0 && termToPostingListMapping.size() == 0)
+            return null;
+        else
+            return "docIdToDocPathMap:\n" + docIdToDocPathMapping.toString() + "\ntermTOPosingListMap:\n" + termToPostingListMapping.toString();
     }
 
     /**
@@ -34,6 +36,27 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void addDocument(AbstractDocument document) {
+
+        //获取文档里三元组的映射关系，term -> PostingList
+        //加入term，加入和自增pos
+        HashMap<AbstractTerm,List<Integer>> map = new HashMap<>();
+        for(AbstractTermTuple termTuple : document.getTuples()){
+            if(!map.containsKey(termTuple.term)) {
+                map.put(termTuple.term, new ArrayList<>());
+                map.get(termTuple.term).add(termTuple.curPos);
+            }
+            else
+                map.get(termTuple.term).add(termTuple.curPos);
+        }
+
+        //更新索引
+        //term->(docId , freq , position)
+        for(Map.Entry<AbstractTerm,List<Integer>> entry : map.entrySet()){
+            if(!this.termToPostingListMapping.containsKey(entry.getKey()))
+                termToPostingListMapping.put(entry.getKey(),new PostingList());
+            termToPostingListMapping.get(entry.getKey()).add(new Posting(document.getDocId(),entry.getValue().size(),entry.getValue()));
+        }
+        //docId -> docPath
         docIdToDocPathMapping.put(document.getDocId(),document.getDocPath());
     }
 
@@ -45,7 +68,14 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void load(File file) {
-
+        try{
+            //创建一个ObjectInputStream输入流；
+            //调用ObjectInputStream对象的readObject()得到序列化的对象。
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+            readObject(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -56,7 +86,14 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void save(File file) {
-
+        try{
+            //创建一个ObjectOutputStream输出流；
+            //调用ObjectOutputStream对象的writeObject输出可序列化对象。
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            writeObject(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -67,10 +104,7 @@ public class Index extends AbstractIndex {
      */
     @Override
     public AbstractPostingList search(AbstractTerm term) {
-        if(termToPostingListMapping.containsKey(term)){
-            return termToPostingListMapping.get(term);
-        }
-        else return null;
+        return termToPostingListMapping.getOrDefault(term, null);
     }
 
     /**
@@ -93,7 +127,11 @@ public class Index extends AbstractIndex {
      */
     @Override
     public void optimize() {
-
+        for(Map.Entry<AbstractTerm,AbstractPostingList> entry : termToPostingListMapping.entrySet()){
+            entry.getValue().sort();
+            for(int i = 0 ; i < entry.getValue().size(); ++i)
+                Collections.sort(entry.getValue().get(i).getPositions());
+        }
     }
 
     /**
@@ -113,12 +151,12 @@ public class Index extends AbstractIndex {
      * @param out :输出流对象
      */
     @Override
-    public void writeObject (ObjectOutputStream out) {
-        try {
+    public void writeObject(ObjectOutputStream out) {
+        try{
             out.writeObject(docIdToDocPathMapping);
             out.writeObject(termToPostingListMapping);
-        } catch(IOException e1){
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -128,11 +166,13 @@ public class Index extends AbstractIndex {
      * @param in ：输入流对象
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void readObject(ObjectInputStream in) {
-        try {
-            this.docIdToDocPathMapping = (Map<Integer, String>) in.readObject();
-            this.termToPostingListMapping = (Map<AbstractTerm, AbstractPostingList>) in.readObject();
-        } catch (IOException e1){System.out.println("IOEException");}
-        catch (ClassNotFoundException e2){System.out.println("ClassNotFoundException");}
+        try{
+            docIdToDocPathMapping = (Map<Integer, String>) in.readObject();
+            termToPostingListMapping = (Map<AbstractTerm, AbstractPostingList>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }

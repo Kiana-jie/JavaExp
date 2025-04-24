@@ -12,7 +12,7 @@ import java.util.TreeMap;
  *      内存中的倒排索引结构为HashMap，key为Term对象，value为对应的PostingList对象.
  *      另外在AbstractIndex里还定义了从docId和docPath之间的映射关系.
  *      必须实现下面接口:
-// *          FileSerializable：可序列化到文件或从文件反序列化.
+ *          FileSerializable：可序列化到文件或从文件反序列化.
  * </pre>
  */
 public abstract class AbstractIndex implements FileSerializable{
